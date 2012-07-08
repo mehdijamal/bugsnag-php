@@ -1,0 +1,13 @@
+{
+    "name": "Bugsnag/Notifier",
+    "description": "Bugsnag notifier implementation in PHP.",
+    "require": {
+        "guzzle/guzzle": "v2.7.0"
+    },
+    "authors": [
+        {
+            "name": "Taylor Otwell",
+            "email": "taylorotwell@gmail.com"
+        }
+    ]
+}
