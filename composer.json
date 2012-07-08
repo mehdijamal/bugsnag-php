@@ -1,5 +1,5 @@
 {
-    "name": "Bugsnag/Notifier",
+    "name": "bugsnag/notifier",
     "description": "Bugsnag notifier implementation in PHP.",
     "keywords": ["bugsnag"],
     "license": "MIT",
