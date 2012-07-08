@@ -55,20 +55,21 @@ class Client {
 	 * Notify Bugsnag of an exception.
 	 *
 	 * @param  Exception|array  $exception
+	 * @param  array  $metaData
 	 * @return void
 	 */
-	public function notify($exception)
+	public function notify($exception, array $metaData = array())
 	{
-		$payload = $this->buildPayload($exception);
+		$payload = $this->buildPayload($exception, $metaData);
 
 		$headers = array('Content-Type' => 'application/json');
 
-		$request = $client->post($this->getApiUrl(), $headers, $payload);
+		$request = $this->http->post($this->getApiUrl(), $headers, $payload);
 
 		try {
 			$request->send();
 		} catch (\Guzzle\Http\Exception\BadResponseException $guzzleException) {
-			$this->handleBadResponse($guzzleException->getResponse());
+			$this->handleBadResponse($guzzleException, $guzzleException->getResponse());
 		}
 	}
 
@@ -78,25 +79,35 @@ class Client {
 	 * @param  Exception|array  $e
 	 * @return string
 	 */
-	protected function buildPayload($exception, array $metaData)
+	protected function buildPayload($exceptions, array $metaData)
 	{
-		if ( ! is_array($e)) {
-			$e = array($e);
+		if ( ! is_array($exceptions)) {
+			$exceptions = array($exceptions);
 		}
 
-		$payload = array('apiKey' => $this->apiKey, 'metaData' => $metaData);
+		return json_encode(array(
+			'apiKey'   => $this->apiKey,
+			'notifier' => $this->getNotifierInfo(),
+			'events'   => array($this->buildEventPayloadArray($exceptions)),
+			'metaData' => $metaData
+		));
+	}
 
-		$payload['notifier'] = $this->getNotifierInfo();
-
+	/**
+	 * Build the payload for an event.
+	 *
+	 * @param  array  $exceptions
+	 * @return array
+	 */
+	protected function buildEventPayloadArray(array $exceptions)
+	{
 		$event = $this->baseData;
 
-		foreach ($exception as $e) {
-			$event['exceptions'][] = $this->buildExceptionArray($e);
+		foreach ($exceptions as $exception) {
+			$event['exceptions'][] = $this->buildExceptionArray($exception);
 		}
 
-		$payload['events'][] = $event;
-
-		return json_encode($payload);
+		return $event;
 	}
 
 	/**
@@ -108,6 +119,15 @@ class Client {
 	protected function buildExceptionArray(\Exception $e)
 	{
 		$payload = array('errorClass' => get_class($e), 'errorMessage' => $e->getMessage());
+
+		// If no trace is available, we will just assign "n/a" to the file and method
+		// and assign a dummy line number. This should not generally happen, and
+		// would only occur if an exception was thrown from the root script.
+		if (count($e->getTrace()) == 0) {
+			$payload['stacktrace'][] = array(
+				'file' => 'n/a', 'lineNumber' => 1, 'method' => 'n/a',
+			);
+		}
 
 		foreach ($e->getTrace() as $trace) {
 			$traceDetail = array(
