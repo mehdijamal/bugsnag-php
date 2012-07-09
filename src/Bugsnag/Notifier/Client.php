@@ -118,7 +118,7 @@ class Client {
 	 */
 	protected function buildExceptionArray(\Exception $e)
 	{
-		$payload = array('errorClass' => get_class($e), 'errorMessage' => $e->getMessage());
+		$payload = array('errorClass' => get_class($e), 'message' => $e->getMessage());
 
 		// If no trace is available, we will just assign "n/a" to the file and method
 		// and assign a dummy line number. This should not generally happen, and
