@@ -130,9 +130,22 @@ class Client {
 		}
 
 		foreach ($e->getTrace() as $trace) {
-			$traceDetail = array(
-				'file' => $trace['file'], 'lineNumber' => $trace['line'], 'method' => $trace['function']
-			);
+			$traceDetail = array();
+			if (isset($trace['file'])) {
+				$traceDetail['file'] = $trace['file'];
+			} else {
+				$traceDetail['file'] = 'n/a';
+			}
+			if (isset($trace['line'])) {
+				$traceDetail['lineNumber'] = $trace['line'];
+			} else {
+				$traceDetail['lineNumber'] = 1;
+			}
+			if (isset($trace['function'])) {
+				$traceDetail['method'] = $trace['function'];
+			} else {
+				$traceDetail['method'] = 'n/a';
+			}
 
 			$payload['stacktrace'][] = $traceDetail;
 		}
