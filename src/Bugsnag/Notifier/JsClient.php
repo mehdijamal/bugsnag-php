@@ -2,7 +2,7 @@
 
 class JsClient extends Client {
 
-	/**
+	/**1
 	 * Build the payload for an event.
 	 *
 	 * @param  array  $exceptions
